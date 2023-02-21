@@ -4,13 +4,14 @@ require 'erb'
 require 'time'
 puts 'Event Manager Initialized!'
 
-
 ###### Open CSV ######
-contents = CSV.open(
-  'event_attendees.csv',
-  headers: true,
-  header_converters: :symbol
-)
+def get_file_contents
+  contents = CSV.open(
+    'event_attendees.csv',
+    headers: true,
+    header_converters: :symbol
+  )
+end
 
 ###### Assignment 1 - Clean Phone Number ######
 def remove_punctuation(phone_number)
@@ -174,13 +175,24 @@ def get_valid_data(prompt, response, valid_responses)
         puts "Thank you for using the Event Manager."
         exit!
       elsif response.downcase == "help"
-        print_actions
+        print_actions(get_file_contents)
         break
       end
     end
     response = nil
   end
   response = get_valid_data(prompt, response, valid_responses)  
+end
+
+def continue_program(contents)
+  puts
+  continue_prompt = "Would you like to do something else? (Y/N): "
+  choice = get_valid_data(continue_prompt, nil, ["Y", "N"])
+  if(choice.downcase == "y")
+    print_actions(contents)
+  else
+    puts "Thank you for using the Event Manager."
+  end
 end
 
 def choose_actions(choice, contents)
@@ -194,9 +206,12 @@ def choose_actions(choice, contents)
   when "4"
     create_letters(contents)
   end
+  continue_program(get_file_contents)
 end
 
 def print_actions(contents)
+  puts "\nType \"exit\" at any time to exit"
+  puts "Type \"help\" at any time to repeat the menu"
   puts "\nWhat would you like to accomplish today?"
   puts "  1. Get attendee phone numbers"
   puts "  2. Get most popular registration hour data"
@@ -204,8 +219,8 @@ def print_actions(contents)
   puts "  4. Send thank you letters"
   action_prompt = "Please enter a number (1-4) for an action: "
   action_responses = %w(1 2 3 4)
-  response = get_valid_data(action_prompt, nil, action_responses)
-  choose_actions(response, contents)
+  choice = get_valid_data(action_prompt, nil, action_responses)
+  choose_actions(choice, contents)
 end
 
-print_actions(contents)
+print_actions(get_file_contents)
