@@ -4,92 +4,64 @@ require 'erb'
 require 'time'
 puts 'Event Manager Initialized!'
 
-def get_valid_data(prompt, response, valid_responses) 
-  if response.nil?
-    print prompt
-    response = gets.chomp
-  else
-    valid_responses.each do |valid_response|
-      if response.downcase == valid_response.downcase
-        return response
-      elsif response.downcase == "exit"
-        puts "Thank you for using the Event Manager."
-        exit!
-      elsif response.downcase == "help"
-        print_actions
-        break
-      end
-    end
-    response = nil
+
+
+
+#Write thank you letters
+def clean_zipcode(zipcode)
+  zipcode.to_s.rjust(5,"0")[0..4]
+end
+  
+def legislators_by_zipcode(zip)
+  civic_info = Google::Apis::CivicinfoV2::CivicInfoService.new
+  civic_info.key = 'AIzaSyClRzDqDh5MsXwnCWi0kOiiBivP6JsSyBw'
+
+  begin
+    civic_info.representative_info_by_address(
+      address: zip,
+      levels: 'country',
+      roles: ['legislatorUpperBody', 'legislatorLowerBody']
+    ).officials
+  rescue
+    'You can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials'
   end
-  response = get_valid_data(prompt, response, valid_responses)  
+end
+  
+def save_thank_you_letter(id,form_letter)
+  Dir.mkdir('output') unless Dir.exist?('output')
+
+  filename = "output/thanks_#{id}.html"
+
+  File.open(filename, 'w') do |file|
+    file.puts form_letter
+  end
+
+  puts "thanks_#{id}.html created succesfully."
 end
 
-def print_actions()
-  puts "\nWhat would you like to accomplish today?"
-  puts "  1. Send thank you letters"
-  puts "  2. Get attendee phone numbers"
-  puts "  3. Get most popular registration time data"
-  puts "  4. Get most popular registration day data"
-  action_prompt = "Please enter a number (1-4) for an action: "
-  action_responses = %w(1 2 3 4)
-  response = get_valid_data(action_prompt, nil, action_responses)
+  
+contents = CSV.open(
+  'event_attendees.csv',
+  headers: true,
+  header_converters: :symbol
+)
+
+def create_letters(contents) 
+  template_letter = File.read('form_letter.erb')
+  erb_template = ERB.new template_letter
+
+  contents.each do |row|
+    id = row[0]
+    name = row[:first_name]
+    zipcode = clean_zipcode(row[:zipcode])
+    legislators = legislators_by_zipcode(zipcode)
+
+    form_letter = erb_template.result(binding)
+
+    save_thank_you_letter(id,form_letter)
+  end
+  puts "\nView output folder for successfully created letters."
 end
-
-print_actions
-
-
-#Final program, writes thank you letters to external files
-# def clean_zipcode(zipcode)
-#   zipcode.to_s.rjust(5,"0")[0..4]
-# end
-  
-# def legislators_by_zipcode(zip)
-#   civic_info = Google::Apis::CivicinfoV2::CivicInfoService.new
-#   civic_info.key = 'AIzaSyClRzDqDh5MsXwnCWi0kOiiBivP6JsSyBw'
-
-#   begin
-#     civic_info.representative_info_by_address(
-#       address: zip,
-#       levels: 'country',
-#       roles: ['legislatorUpperBody', 'legislatorLowerBody']
-#     ).officials
-#   rescue
-#     'You can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials'
-#   end
-# end
-  
-# def save_thank_you_letter(id,form_letter)
-#   Dir.mkdir('output') unless Dir.exist?('output')
-
-#   filename = "output/thanks_#{id}.html"
-
-#   File.open(filename, 'w') do |file|
-#     file.puts form_letter
-#   end
-# end
-  
-# puts 'EventManager initialized.'
-  
-# contents = CSV.open(
-#   'event_attendees.csv',
-#   headers: true,
-#   header_converters: :symbol
-# )
-  
-# template_letter = File.read('form_letter.erb')
-# erb_template = ERB.new template_letter
-  
-# contents.each do |row|
-#   id = row[0]
-#   name = row[:first_name]
-#   zipcode = clean_zipcode(row[:zipcode])
-#   legislators = legislators_by_zipcode(zipcode)
-
-#   form_letter = erb_template.result(binding)
-
-#   save_thank_you_letter(id,form_letter)
-# end
 
 
 
@@ -177,37 +149,83 @@ print_actions
 
 
 ###### Assignment 3 - Day of the Week Targeting ######
-puts 'EventManager initialized.'
+# puts 'EventManager initialized.'
 
-contents = CSV.open(
-  'event_attendees.csv',
-  headers: true,
-  header_converters: :symbol
-)
+# contents = CSV.open(
+#   'event_attendees.csv',
+#   headers: true,
+#   header_converters: :symbol
+# )
 
-def create_day_hash(contents)
-  day_hash = Hash.new(0)
-  puts "Dates with weekday: "
-  contents.each do |row|
-    date_time = Date.strptime(row[:regdate], "%m/%d/%y")
-    weekday = Date::DAYNAMES[date_time.wday]
-    puts "#{date_time} - #{weekday}"
-    day_hash[weekday] += 1
+# def create_day_hash(contents)
+#   day_hash = Hash.new(0)
+#   puts "Dates with weekday: "
+#   contents.each do |row|
+#     date_time = Date.strptime(row[:regdate], "%m/%d/%y")
+#     weekday = Date::DAYNAMES[date_time.wday]
+#     puts "#{date_time} - #{weekday}"
+#     day_hash[weekday] += 1
+#   end
+#   print_day_hash(day_hash)
+# end
+
+# def print_day_hash(day_hash)
+#   puts "Weekday frequency hash:"
+#   day_hash.each do |key, value|
+#     puts "#{key}:#{value}"
+#   end
+#   print_popular_days(day_hash)
+# end
+
+# def print_popular_days(hour_hash)
+#   puts "Most popular weekday(s):"
+#   hour_hash.each { |k, v| puts k if v == hour_hash.values.max }
+# end
+
+# create_day_hash(contents)
+
+
+def get_valid_data(prompt, response, valid_responses) 
+  if response.nil?
+    print prompt
+    response = gets.chomp
+  else
+    valid_responses.each do |valid_response|
+      if response.downcase == valid_response.downcase
+        return response
+      elsif response.downcase == "exit"
+        puts "Thank you for using the Event Manager."
+        exit!
+      elsif response.downcase == "help"
+        print_actions
+        break
+      end
+    end
+    response = nil
   end
-  print_day_hash(day_hash)
+  response = get_valid_data(prompt, response, valid_responses)  
 end
 
-def print_day_hash(day_hash)
-  puts "Weekday frequency hash:"
-  day_hash.each do |key, value|
-    puts "#{key}:#{value}"
+def choose_actions(choice, contents)
+  case choice
+  when "1"
+    create_letters(contents)
+  when "2"
+  when "3"
+  when "4"
   end
-  print_popular_days(day_hash)
 end
 
-def print_popular_days(hour_hash)
-  puts "Most popular weekday(s):"
-  hour_hash.each { |k, v| puts k if v == hour_hash.values.max }
+def print_actions(contents)
+  puts "\nWhat would you like to accomplish today?"
+  puts "  1. Send thank you letters"
+  puts "  2. Get attendee phone numbers"
+  puts "  3. Get most popular registration time data"
+  puts "  4. Get most popular registration day data"
+  action_prompt = "Please enter a number (1-4) for an action: "
+  action_responses = %w(1 2 3 4)
+  response = get_valid_data(action_prompt, nil, action_responses)
+  choose_actions(response, contents)
 end
 
-create_day_hash(contents)
+print_actions(contents)
