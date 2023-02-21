@@ -66,52 +66,48 @@ end
 
 
 ###### Assignment 1 - Clean Phone Number ######
-# puts 'EventManager initialized.'
 
-# contents = CSV.open(
-#   'event_attendees.csv',
-#   headers: true,
-#   header_converters: :symbol
-# )
+def remove_punctuation(phone_number)
+  clean_number = ''
+  phone_number.each_char { |c|
+    if /\A\d+\z/.match(c)
+      clean_number += c
+    end  
+  }
+  clean_number
+end
 
-# def remove_punctuation(phone_number)
-#   clean_number = ''
-#   phone_number.each_char { |c|
-#     if /\A\d+\z/.match(c)
-#       clean_number += c
-#     end  
-#   }
-#   clean_number
-# end
+def clean_phone_number(phone_number)
+  phone_number = remove_punctuation(phone_number)
+  if phone_number.nil?
+    '0000000000'
+  elsif phone_number.length < 10
+    '0000000000'
+  elsif phone_number.length == 11
+    if phone_number[0] == '1'
+      phone_number[1..10]
+    else
+      '0000000000'
+    end
+  elsif phone_number.length > 11
+    '0000000000'
+  else
+    phone_number
+  end
+end
 
-# def clean_phone_number(phone_number)
-#   phone_number = remove_punctuation(phone_number)
-#   if phone_number.nil?
-#     '0000000000'
-#   elsif phone_number.length < 10
-#     '0000000000'
-#   elsif phone_number.length == 11
-#     if phone_number[0] == '1'
-#       phone_number[1..10]
-#     else
-#       '0000000000'
-#     end
-#   elsif phone_number.length > 11
-#     '0000000000'
-#   else
-#     phone_number
-#   end
-# end
+def display_number(contents)
+  puts "\nRegistrants\' first names and phone numbers:"
+  contents.each do |row|
+    name = row[:first_name]
 
-# contents.each do |row|
-#   name = row[:first_name]
+    phone_number = clean_phone_number(row[:homephone])
+    phone_number = phone_number.insert(3, '-')
+    phone_number = phone_number.insert(7, '-')
 
-#   phone_number = clean_phone_number(row[:homephone])
-#   phone_number = phone_number.insert(3, '-')
-#   phone_number = phone_number.insert(7, '-')
-
-#   puts "#{name} #{phone_number}"
-# end
+    puts "#{name} #{phone_number}"
+  end
+end
 
 
 
@@ -201,6 +197,7 @@ def choose_actions(choice, contents)
   when "1"
     create_letters(contents)
   when "2"
+    display_number(contents)
   when "3"
     create_hour_hash(contents)
   when "4"
@@ -212,7 +209,7 @@ def print_actions(contents)
   puts "\nWhat would you like to accomplish today?"
   puts "  1. Send thank you letters"
   puts "  2. Get attendee phone numbers"
-  puts "  3. Get most popular registration time data"
+  puts "  3. Get most popular registration hour data"
   puts "  4. Get most popular registration day data"
   action_prompt = "Please enter a number (1-4) for an action: "
   action_responses = %w(1 2 3 4)
