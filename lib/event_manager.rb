@@ -140,3 +140,39 @@ puts 'Event Manager Initialized!'
 
 # create_hour_hash(contents)
 
+
+###### Assignment 3 - Day of the Week Targeting ######
+puts 'EventManager initialized.'
+
+contents = CSV.open(
+  'event_attendees.csv',
+  headers: true,
+  header_converters: :symbol
+)
+
+def create_day_hash(contents)
+  day_hash = Hash.new(0)
+  puts "Dates with weekday: "
+  contents.each do |row|
+    date_time = Date.strptime(row[:regdate], "%m/%d/%y")
+    weekday = Date::DAYNAMES[date_time.wday]
+    puts "#{date_time} - #{weekday}"
+    day_hash[weekday] += 1
+  end
+  print_day_hash(day_hash)
+end
+
+def print_day_hash(day_hash)
+  puts "Weekday frequency hash:"
+  day_hash.each do |key, value|
+    puts "#{key}:#{value}"
+  end
+  print_popular_days(day_hash)
+end
+
+def print_popular_days(hour_hash)
+  puts "Most popular weekday(s):"
+  hour_hash.each { |k, v| puts k if v == hour_hash.values.max }
+end
+
+create_day_hash(contents)
