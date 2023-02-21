@@ -4,6 +4,41 @@ require 'erb'
 require 'time'
 puts 'Event Manager Initialized!'
 
+def get_valid_data(prompt, response, valid_responses) 
+  if response.nil?
+    print prompt
+    response = gets.chomp
+  else
+    valid_responses.each do |valid_response|
+      if response.downcase == valid_response.downcase
+        return response
+      elsif response.downcase == "exit"
+        puts "Thank you for using the Event Manager."
+        exit!
+      elsif response.downcase == "help"
+        print_actions
+        break
+      end
+    end
+    response = nil
+  end
+  response = get_valid_data(prompt, response, valid_responses)  
+end
+
+def print_actions()
+  puts "\nWhat would you like to accomplish today?"
+  puts "  1. Send thank you letters"
+  puts "  2. Get attendee phone numbers"
+  puts "  3. Get most popular registration time data"
+  puts "  4. Get most popular registration day data"
+  action_prompt = "Please enter a number (1-4) for an action: "
+  action_responses = %w(1 2 3 4)
+  response = get_valid_data(action_prompt, nil, action_responses)
+end
+
+print_actions
+
+
 #Final program, writes thank you letters to external files
 # def clean_zipcode(zipcode)
 #   zipcode.to_s.rjust(5,"0")[0..4]
