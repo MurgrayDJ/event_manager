@@ -5,68 +5,14 @@ require 'time'
 puts 'Event Manager Initialized!'
 
 
-
-
-#Write thank you letters
-def clean_zipcode(zipcode)
-  zipcode.to_s.rjust(5,"0")[0..4]
-end
-  
-def legislators_by_zipcode(zip)
-  civic_info = Google::Apis::CivicinfoV2::CivicInfoService.new
-  civic_info.key = 'AIzaSyClRzDqDh5MsXwnCWi0kOiiBivP6JsSyBw'
-
-  begin
-    civic_info.representative_info_by_address(
-      address: zip,
-      levels: 'country',
-      roles: ['legislatorUpperBody', 'legislatorLowerBody']
-    ).officials
-  rescue
-    'You can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials'
-  end
-end
-  
-def save_thank_you_letter(id,form_letter)
-  Dir.mkdir('output') unless Dir.exist?('output')
-
-  filename = "output/thanks_#{id}.html"
-
-  File.open(filename, 'w') do |file|
-    file.puts form_letter
-  end
-
-  puts "thanks_#{id}.html created succesfully."
-end
-
-  
+###### Open CSV ######
 contents = CSV.open(
   'event_attendees.csv',
   headers: true,
   header_converters: :symbol
 )
 
-def create_letters(contents) 
-  template_letter = File.read('form_letter.erb')
-  erb_template = ERB.new template_letter
-
-  contents.each do |row|
-    id = row[0]
-    name = row[:first_name]
-    zipcode = clean_zipcode(row[:zipcode])
-    legislators = legislators_by_zipcode(zipcode)
-
-    form_letter = erb_template.result(binding)
-
-    save_thank_you_letter(id,form_letter)
-  end
-  puts "\nView output folder for successfully created letters."
-end
-
-
-
 ###### Assignment 1 - Clean Phone Number ######
-
 def remove_punctuation(phone_number)
   clean_number = ''
   phone_number.each_char { |c|
@@ -111,7 +57,7 @@ end
 
 
 
-###### Assignment 2 (Action 3) - Time Targeting ######
+###### Assignment 2 - Time Targeting ######
 def create_hour_hash(contents)
   hour_hash = Hash.new(0)
   contents.each do |row|
@@ -137,7 +83,7 @@ end
 
 
 
-###### Assignment 3 (Action 4) - Day of the Week Targeting ######
+###### Assignment 3 - Day of the Week Targeting ######
 def create_day_hash(contents)
   day_hash = Hash.new(0)
   puts "\nDates with weekday: "
@@ -164,10 +110,55 @@ def print_popular_days(hour_hash)
 end
 
 
+####### Action 4 - Write thank you letters #######
+def clean_zipcode(zipcode)
+  zipcode.to_s.rjust(5,"0")[0..4]
+end
+  
+def legislators_by_zipcode(zip)
+  civic_info = Google::Apis::CivicinfoV2::CivicInfoService.new
+  civic_info.key = 'AIzaSyClRzDqDh5MsXwnCWi0kOiiBivP6JsSyBw'
+
+  begin
+    civic_info.representative_info_by_address(
+      address: zip,
+      levels: 'country',
+      roles: ['legislatorUpperBody', 'legislatorLowerBody']
+    ).officials
+  rescue
+    'You can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials'
+  end
+end
+  
+def save_thank_you_letter(id,form_letter)
+  Dir.mkdir('output') unless Dir.exist?('output')
+
+  filename = "output/thanks_#{id}.html"
+
+  File.open(filename, 'w') do |file|
+    file.puts form_letter
+  end
+
+  puts "thanks_#{id}.html created succesfully."
+end
 
 
+def create_letters(contents) 
+  template_letter = File.read('form_letter.erb')
+  erb_template = ERB.new template_letter
 
+  contents.each do |row|
+    id = row[0]
+    name = row[:first_name]
+    zipcode = clean_zipcode(row[:zipcode])
+    legislators = legislators_by_zipcode(zipcode)
 
+    form_letter = erb_template.result(binding)
+
+    save_thank_you_letter(id,form_letter)
+  end
+  puts "\nView output folder for successfully created letters."
+end
 
 
 ###### Data collection and validation ######
@@ -195,22 +186,22 @@ end
 def choose_actions(choice, contents)
   case choice
   when "1"
-    create_letters(contents)
-  when "2"
     display_number(contents)
-  when "3"
+  when "2"
     create_hour_hash(contents)
-  when "4"
+  when "3"
     create_day_hash(contents)
+  when "4"
+    create_letters(contents)
   end
 end
 
 def print_actions(contents)
   puts "\nWhat would you like to accomplish today?"
-  puts "  1. Send thank you letters"
-  puts "  2. Get attendee phone numbers"
-  puts "  3. Get most popular registration hour data"
-  puts "  4. Get most popular registration day data"
+  puts "  1. Get attendee phone numbers"
+  puts "  2. Get most popular registration hour data"
+  puts "  3. Get most popular registration day data"
+  puts "  4. Send thank you letters"
   action_prompt = "Please enter a number (1-4) for an action: "
   action_responses = %w(1 2 3 4)
   response = get_valid_data(action_prompt, nil, action_responses)
