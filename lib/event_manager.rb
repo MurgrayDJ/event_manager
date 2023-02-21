@@ -113,6 +113,8 @@ end
 #   puts "#{name} #{phone_number}"
 # end
 
+
+
 ###### Assignment 2 - Time Targeting ######
 # puts 'EventManager initialized.'
 
@@ -157,34 +159,39 @@ end
 #   header_converters: :symbol
 # )
 
-# def create_day_hash(contents)
-#   day_hash = Hash.new(0)
-#   puts "Dates with weekday: "
-#   contents.each do |row|
-#     date_time = Date.strptime(row[:regdate], "%m/%d/%y")
-#     weekday = Date::DAYNAMES[date_time.wday]
-#     puts "#{date_time} - #{weekday}"
-#     day_hash[weekday] += 1
-#   end
-#   print_day_hash(day_hash)
-# end
+def create_day_hash(contents)
+  day_hash = Hash.new(0)
+  puts "\nDates with weekday: "
+  contents.each do |row|
+    date_time = Date.strptime(row[:regdate], "%m/%d/%y")
+    weekday = Date::DAYNAMES[date_time.wday]
+    puts "#{date_time} - #{weekday}"
+    day_hash[weekday] += 1
+  end
+  print_day_hash(day_hash)
+end
 
-# def print_day_hash(day_hash)
-#   puts "Weekday frequency hash:"
-#   day_hash.each do |key, value|
-#     puts "#{key}:#{value}"
-#   end
-#   print_popular_days(day_hash)
-# end
+def print_day_hash(day_hash)
+  puts "\nWeekday frequency hash:"
+  day_hash.each do |key, value|
+    puts "#{key}:#{value}"
+  end
+  print_popular_days(day_hash)
+end
 
-# def print_popular_days(hour_hash)
-#   puts "Most popular weekday(s):"
-#   hour_hash.each { |k, v| puts k if v == hour_hash.values.max }
-# end
-
-# create_day_hash(contents)
+def print_popular_days(hour_hash)
+  puts "\nMost popular weekday(s):"
+  hour_hash.each { |k, v| puts k if v == hour_hash.values.max }
+end
 
 
+
+
+
+
+
+
+###### Data collection and validation ######
 def get_valid_data(prompt, response, valid_responses) 
   if response.nil?
     print prompt
@@ -213,6 +220,7 @@ def choose_actions(choice, contents)
   when "2"
   when "3"
   when "4"
+    create_day_hash(contents)
   end
 end
 
