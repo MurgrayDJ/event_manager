@@ -115,50 +115,33 @@ end
 
 
 
-###### Assignment 2 - Time Targeting ######
-# puts 'EventManager initialized.'
+###### Assignment 2 (Action 3) - Time Targeting ######
+def create_hour_hash(contents)
+  hour_hash = Hash.new(0)
+  contents.each do |row|
+    date_time = Time.strptime(row[:regdate], "%m/%d/%Y %k:%M")
+    hour = date_time.hour
+    hour_hash[hour] += 1
+  end
+  print_hour_hash(hour_hash)
+end
 
-# contents = CSV.open(
-#   'event_attendees.csv',
-#   headers: true,
-#   header_converters: :symbol
-# )
+def print_hour_hash(hour_hash)
+  puts "\nHour frequency hash:"
+  hour_hash.each do |key, value|
+    puts "#{key}:#{value}"
+  end
+  print_popular_hours(hour_hash)
+end
 
-# def create_hour_hash(contents)
-#   hour_hash = Hash.new(0)
-#   contents.each do |row|
-#     date_time = Time.strptime(row[:regdate], "%m/%d/%Y %k:%M")
-#     hour = date_time.hour
-#     hour_hash[hour] += 1
-#   end
-#   print_hour_hash(hour_hash)
-# end
-
-# def print_hour_hash(hour_hash)
-#   puts "Hour frequency hash:"
-#   hour_hash.each do |key, value|
-#     puts "#{key}:#{value}"
-#   end
-#   print_popular_hours(hour_hash)
-# end
-
-# def print_popular_hours(hour_hash)
-#   puts "Most popular hours:"
-#   hour_hash.each { |k, v| puts k if v == hour_hash.values.max }
-# end
-
-# create_hour_hash(contents)
+def print_popular_hours(hour_hash)
+  puts "\nMost popular hour(s):"
+  hour_hash.each { |k, v| puts k if v == hour_hash.values.max }
+end
 
 
-###### Assignment 3 - Day of the Week Targeting ######
-# puts 'EventManager initialized.'
 
-# contents = CSV.open(
-#   'event_attendees.csv',
-#   headers: true,
-#   header_converters: :symbol
-# )
-
+###### Assignment 3 (Action 4) - Day of the Week Targeting ######
 def create_day_hash(contents)
   day_hash = Hash.new(0)
   puts "\nDates with weekday: "
@@ -219,6 +202,7 @@ def choose_actions(choice, contents)
     create_letters(contents)
   when "2"
   when "3"
+    create_hour_hash(contents)
   when "4"
     create_day_hash(contents)
   end
